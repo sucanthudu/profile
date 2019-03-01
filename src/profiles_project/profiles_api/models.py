@@ -17,7 +17,7 @@ class UserProfileManager(BaseUserManager):
              raise ValueError('Users must have an email address')
 
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name) #gets username and email from UserProfile model and assigns it to user obj and therby saving to db
+        user = self.model(email=email, name=name,) #gets username and email from UserProfile model and assigns it to user obj and therby saving to db
 
         user.set_password(password)
         user.save(using=self._db)
@@ -45,7 +45,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     """Represents a user profile"""
 #fields
 
-    email = models.EmailField(max_length=255, unique = True)
+    email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
