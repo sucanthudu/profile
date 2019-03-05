@@ -10,7 +10,7 @@ class UserProfileManager(BaseUserManager):
     """Helps Django to understand and work with our custom user model"""
 
     def create_user(self, email, name, password=None):
-        """Creates a new user profile object"""
+        """Creates a new super(admin) user profile object"""
 
         if not email:
              #if email field is blank or none this returns(condition is) True
@@ -72,3 +72,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         """Django uses this when it needs to convert the object to a string"""
 
         return self.email
+
+class ProfileFeedItem(models.Model):
+    """Profile status update"""
+
+    user_profile = models.ForeignKey('UserProfile',on_delete=models.CASCADE)
+    status_text = models.CharField(max_length=255)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        """return the model as string"""
+
+        return self.status_text

@@ -5,8 +5,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import filters
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework.authtoken.views import ObtainAuthToken
 from . import serializers, models, permissions
-
+from rest_framework.permissions import IsAuthenticatedOrReadOnly     #default django permissions class gives permission to the authendicated user to update their status else readonly
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 class HelloApiView(APIView):
@@ -97,9 +100,31 @@ class HelloViewSet(viewsets.ViewSet):
 class UserProfileViewSet(viewsets.ModelViewSet):
     """Handles creating and updating profiles"""
 
-    serializer_class = serializers.UserProfileSerializer
-    queryset = models.UserProfile.objects.all()            #query and list all items from db
+    serializer_class = serializers.UserProfileSerializer   #validates user profile
+    queryset = models.UserProfile.objects.all()            #query and returns list all items from db to frontend(ViewSet get method)
     authentication_classes = (TokenAuthentication,)        #token auth
     permission_classes = (permissions.UpdateOwnProfile,)   #setting permissions for modifying user profiles using ids
     filter_backends = (filters.SearchFilter,)              # search and filter users based on name and email fields
     search_fields = ('name','email',)
+
+class LoginViewSet(viewsets.ViewSet):
+    """Checks email and password and returns an auth token"""
+
+    serializer_class = AuthTokenSerializer
+
+    def create(self, request):
+        """Use the ObtainAuthToken APIView to validate and create a token"""
+
+        return ObtainAuthToken().post(request)            #passing the request to ObtainAuthToken
+
+class UserProfileFeedViewSet(viewsets.ModelViewSet):
+    """Handles creating and updating profile feed items"""
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = serializers.ProfileFeedItemSerializer
+    queryset = models.ProfileFeedItem.objects.all()
+    permission_classes = (permissions.PostOwnStatus, IsAuthenticated)#OrReadOnly) #only logged in users can post or update status
+
+    def perform_create(self, serializer):
+        """Sets the user profile to the logged in user"""
+
+        serializer.save(user_profile=self.request.user)    #creates user feed(text data input) and associates with currently logged in user
