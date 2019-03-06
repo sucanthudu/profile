@@ -29,7 +29,7 @@ class UserProfileManager(BaseUserManager):
 
         user = self.create_user(email, name, password)
         #super user settings and save it to db
-        user.is_supervisor=True
+        user.is_superuser=True
         user.is_staff=True
 
         user.save(using=self._db)
